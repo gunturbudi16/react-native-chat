@@ -10,8 +10,8 @@ import User from './User';
 
 const AuthLoading = ({navigation}) => {
   const boosAsync = async () => {
-    User.phone = await AsyncStorage.getItem('userToken');
-    navigation.navigate(User.phone ? 'App' : 'Auth');
+    User.uid = await AsyncStorage.getItem('userToken');
+    navigation.navigate(User.uid ? 'App' : 'Auth');
   };
 
   useEffect(() => {

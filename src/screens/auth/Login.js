@@ -20,8 +20,8 @@ class Login extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: '',
       email: '',
+      password: '',
     };
   }
   handleChange = key => value => {
@@ -31,6 +31,9 @@ class Login extends React.Component {
     const {email, password} = this.state;
     const {navigation} = this.props;
     try {
+      if (password.length < 5) {
+        toastr('Password must have 5 character', 'danger');
+      }
       const response = await firebase
         .auth()
         .signInWithEmailAndPassword(email, password);
@@ -42,6 +45,11 @@ class Login extends React.Component {
           uid: response.user.uid,
         });
       await AsyncStorage.setItem('userToken', response.user.uid);
+      User.uid = response.user.uid;
+      /*  firebase
+        .database()
+        .ref('users/' + User.uid)
+        .set({name: this.state.name}); */
       navigation.navigate('App');
     } catch (error) {
       toastr(error.message, 'danger');
@@ -79,7 +87,7 @@ class Login extends React.Component {
               placeholder="Password"
               placeholderTextColor="#de7119"
               style={styles.textInput}
-              // secureTextEntry={true}
+              secureTextEntry={true}
               returnKeyType="go"
             />
             <View style={styles.btnLogin}>{this._renderAccessButton()}</View>

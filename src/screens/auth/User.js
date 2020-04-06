@@ -3,7 +3,6 @@ const User = {
   name: null,
   email: null,
   password: null,
-  phone: null,
   image: null,
 };
 

@@ -108,18 +108,17 @@ class Contact extends Component {
             ListHeaderComponent={() => (
               <View
                 style={{
-                  backgroundColor: '#34526e',
+                  backgroundColor: 'black',
                   padding: 10,
                   alignItems: 'center',
                 }}>
                 <Text
                   style={{
                     fontSize: 20,
-                    color: '#eaedf0',
+                    color: 'orange',
                     fontWeight: 'bold',
                   }}>
-                  {' '}
-                  Contacts{' '}
+                  Contact
                 </Text>
               </View>
             )}

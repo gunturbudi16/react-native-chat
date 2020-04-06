@@ -131,11 +131,11 @@ export const sendMessage = (
 export const getChats = () => async dispatch => {
   firebase
     .database()
-    .ref(`/user_conversations/gunturkurniawan238@gmail.com`)
+    .ref('/user_conversations/gunturkurniawan238@gmail.com')
     .on('value', user_conversations => {
       firebase
         .database()
-        .ref(`/users_of_contacts/gunturkurniawan238@gmail.com`)
+        .ref('/users_of_contacts/gunturkurniawan238@gmail.com')
         .on('value', users_of_contacts => {
           const contacts = _.map(users_of_contacts.val(), (value, uid) => {
             return {...value, uid};
@@ -155,7 +155,7 @@ export const getChats = () => async dispatch => {
 
           for (i = 0; i < conversations.length; i++) {
             for (y = 0; y < contacts.length; y++) {
-              if (conversations[i].email == contacts[y].email) {
+              if (conversations[i].email === contacts[y].email) {
                 array_merged[count] = {...conversations[i], ...contacts[y]};
                 count++;
               }

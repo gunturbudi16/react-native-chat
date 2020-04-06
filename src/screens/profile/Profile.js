@@ -1,22 +1,32 @@
-import React from 'react';
-
+import React, {Component} from 'react';
+import Geolocation from 'react-native-geolocation-service';
 import {
+  SafeAreaView,
+  ScrollView,
   Text,
   AsyncStorage,
   Image,
   View,
+  Button,
   TextInput,
   ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
+  ToastAndroid,
+  PermissionsAndroid,
 } from 'react-native';
+
 import ImagePicker from 'react-native-image-picker';
+
 import {Header} from 'react-navigation';
+
 import User from '../auth/User';
+
 import {toastr} from '../../helpers/helper';
+
 import firebase from 'firebase';
 
-class Profile extends React.Component {
+class Profile extends Component {
   _isMounted = false;
 
   constructor(props) {
@@ -28,7 +38,10 @@ class Profile extends React.Component {
       bio: '',
       imageSource: require('../../assets/user.png'),
       upload: false,
+      latitude: '',
+      longitude: '',
     };
+    this.updateLocation();
   }
 
   async _getProfile() {
@@ -38,22 +51,22 @@ class Profile extends React.Component {
 
     const {navigation} = this.props;
 
-    const person = await firebase
-      .database()
-      .ref(`users/${uid}`)
-      .once('value');
+    const person = await firebase.database().ref(`users/${uid}`).once('value');
 
     const image = person.val().image;
     const name = person.val().name;
     const status = person.val().status;
     const bio = person.val().bio;
-
+    const latitude = person.val().latitude;
+    const longitude = person.val().longitude;
     if (this._isMounted) {
       this.setState({
         imageSource: image ? {uri: image} : require('../../assets/user.png'),
         name: name ? name : '',
         status: status ? status : '',
         bio: bio ? bio : '',
+        latitude: latitude ? latitude : '',
+        longitude: longitude ? longitude : '',
       });
     }
   }
@@ -66,13 +79,13 @@ class Profile extends React.Component {
     this._isMounted = false;
   }
 
-  _signout = async props => {
+  _signout = async (props) => {
     await AsyncStorage.clear();
 
     this.props.navigation.navigate('Login');
   };
 
-  _handleChange = key => value => {
+  _handleChange = (key) => (value) => {
     this.setState({[key]: value});
   };
 
@@ -102,6 +115,7 @@ class Profile extends React.Component {
 
       if (error === false) {
         this.updateUser();
+        this.updateLocation();
       }
     } catch (error) {
       toastr(error.message, 'danger');
@@ -122,7 +136,7 @@ class Profile extends React.Component {
       },
     };
 
-    ImagePicker.showImagePicker(options, response => {
+    ImagePicker.showImagePicker(options, (response) => {
       try {
         if (!response.didCancel && !response.error) {
           const {fileName, fileSize} = response;
@@ -169,8 +183,8 @@ class Profile extends React.Component {
     return false;
   }
 
-  updateUser = async imageUrl => {
-    const {imageSource, name, status, bio} = this.state;
+  updateUser = async (imageUrl) => {
+    const {imageSource, name, status, bio, latitude, longitude} = this.state;
     const {currentUser} = firebase.auth();
 
     const getDBImage = await firebase
@@ -190,12 +204,14 @@ class Profile extends React.Component {
         name: name ? name : '',
         status: status ? status : '',
         bio: bio ? bio : '',
+        latitude: this.state.latitude,
+        longitude: this.state.longitude,
       });
 
     toastr('Successfully updated !', 'success');
   };
 
-  updateUserImage = imageUrl => {
+  updateUserImage = (imageUrl) => {
     this.updateUser(imageUrl);
     this.setState({
       upload: false,
@@ -212,9 +228,9 @@ class Profile extends React.Component {
       .storage()
       .ref(`profile_picture/${currentUser.uid}.png`)
       .put(file)
-      .then(snapshot => snapshot.ref.getDownloadURL())
-      .then(url => this.updateUserImage(url))
-      .catch(error => {
+      .then((snapshot) => snapshot.ref.getDownloadURL())
+      .then((url) => this.updateUserImage(url))
+      .catch((error) => {
         this.setState({
           upload: false,
           imageSource: require('../../assets/user.png'),
@@ -222,13 +238,13 @@ class Profile extends React.Component {
       });
   };
 
-  uriToBlob = uri => {
+  uriToBlob = (uri) => {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.onload = function() {
+      xhr.onload = function () {
         resolve(xhr.response);
       };
-      xhr.onerror = function() {
+      xhr.onerror = function () {
         reject(new Error('Error on upload image'));
       };
       xhr.responseType = 'blob';
@@ -236,6 +252,60 @@ class Profile extends React.Component {
       xhr.send(null);
     });
   };
+  updateLocation = async () => {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'ReactNativeCode Location Permission',
+        message: 'ReactNativeCode App needs access to your location',
+      },
+    );
+    if (granted) {
+      await Geolocation.getCurrentPosition(
+        async (position) => {
+          console.log('My current location', JSON.stringify(position));
+          await this.setState({
+            latitude: position.coords.latitude.toString(),
+            longitude: position.coords.longitude.toString(),
+          });
+        },
+        (error) => {
+          console.log(error.code, error.message);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 10000,
+        },
+      );
+    }
+  };
+
+  handleUpdateLocation = async () => {
+    const uid = firebase.auth().currentUser.uid;
+    const {name, status, bio, imageSource, latitude, longitude} = this.state;
+    const ref = firebase.database().ref(`/users/${uid}`);
+    setTimeout(async () => {
+      await ref.set({
+        name,
+        status,
+        bio,
+        uid,
+        latitude,
+        longitude,
+        imageSource: require('../../assets/user.png'),
+      });
+      ToastAndroid.showWithGravity(
+        `Location Updated`,
+        ToastAndroid.SHORT,
+        ToastAndroid.BOTTOM,
+      );
+    }, 2000);
+  };
+
+  async componentDidMount() {
+    await this.updateLocation();
+  }
 
   render() {
     return (
@@ -302,6 +372,7 @@ class Profile extends React.Component {
     );
   }
 }
+
 const Style = StyleSheet.create({
   container: {
     width: '80%',
@@ -339,4 +410,5 @@ const Style = StyleSheet.create({
     borderRadius: 5,
   },
 });
+
 export default Profile;

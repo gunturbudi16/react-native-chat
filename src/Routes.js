@@ -8,6 +8,7 @@ import Register from '../src/screens/auth/Register';
 
 import HomeScreen from './screens/home/Home';
 import ChatScreen from './screens/chat/Chat';
+import MapScreen from './screens/map/Map';
 import ProfileScreen from './screens/profile/Profile';
 import ContactScreen from './screens/contact/Contact';
 
@@ -15,19 +16,23 @@ import {Image} from 'react-native';
 import {enableScreens} from 'react-native-screens';
 import {createBottomTabNavigator} from 'react-navigation-tabs';
 enableScreens();
+
 const AppStack = createStackNavigator({
   Home: HomeScreen,
   Chat: ChatScreen,
 });
+
 AppStack.navigationOptions = ({navigation}) => {
   let tabBarVisible = navigation.state.index === 0;
   return {
     tabBarVisible,
   };
 };
+
 const TabNavigator = createBottomTabNavigator(
   {
     Chats: AppStack,
+    Map: MapScreen,
     Profile: ProfileScreen,
     Contact: ContactScreen,
   },
@@ -58,11 +63,11 @@ const TabNavigator = createBottomTabNavigator(
       },
     }),
     tabBarOptions: {
-      activeTintColor: '#eaedf0',
+      activeTintColor: 'orange',
       inActiveColor: '#c2cbd3',
       style: {
         borderTopColor: 'transparent',
-        backgroundColor: '#34526e',
+        backgroundColor: 'black',
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         height: 60,

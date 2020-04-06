@@ -88,26 +88,28 @@ class Register extends Component {
         style={styles.image}
         source={require('../../assets/logo1.jpg')}>
         <View style={styles.container}>
+          <Text style={styles.text1}>Please Register</Text>
+          <Text style={styles.text2}>Enjoy with DevConnector</Text>
           <View style={styles.formGroup}>
             <TextInput
               value={this.state.name}
               onChangeText={this.handleChange('name')}
               placeholder="Name"
-              placeholderTextColor="#294158"
+              placeholderTextColor="#de7119"
               style={styles.textInput}
             />
             <TextInput
               value={this.state.email}
               onChangeText={this.handleChange('email')}
               placeholder="Email"
-              placeholderTextColor="#294158"
+              placeholderTextColor="#de7119"
               style={styles.textInput}
             />
             <TextInput
               value={this.state.password}
               onChangeText={this.handleChange('password')}
               placeholder="Password"
-              placeholderTextColor="#294158"
+              placeholderTextColor="#de7119"
               style={styles.textInput}
               secureTextEntry={true}
             />
@@ -128,12 +130,30 @@ class Register extends Component {
 }
 
 const styles = StyleSheet.create({
+  text1: {
+    color: '#de7119',
+    marginLeft: 120,
+    marginTop: 160,
+    fontSize: 30,
+    fontWeight: 'bold',
+    fontFamily: 'Helvetica',
+  },
+  text2: {color: '#de7119', marginLeft: 180, fontSize: 30, fontWeight: 'bold'},
+
+  btnSignUp: {
+    marginTop: 12,
+    paddingTop: 5,
+    paddingBottom: 12,
+    backgroundColor: '#f4e04d',
+    borderRadius: 7,
+    borderColor: '#24394d',
+  },
   image: {
     flex: 1,
   },
   container: {
     flex: 1,
-    backgroundColor: '#d6dce2',
+    // backgroundColor: '#d6dce2',
     padding: 10,
   },
   formGroup: {
@@ -148,18 +168,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#294158',
   },
-  btnRegister: {
-    marginTop: 12,
-    paddingTop: 12,
-    paddingBottom: 12,
-    backgroundColor: '#24394d',
-    borderRadius: 7,
-    borderWidth: 1,
-    borderColor: '#24394d',
-  },
   textLogin: {
     textAlign: 'center',
-    color: '#A0A0A0',
+    color: 'red',
     paddingTop: 15,
     fontSize: 20,
     // color: 'orange',

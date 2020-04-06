@@ -55,6 +55,7 @@ export default function(state = initialState, action) {
         password: '',
       };
     case LOGIN_FAIL:
+    case REGISTER_FAIL:
       return {
         ...state,
         messageError: payload,

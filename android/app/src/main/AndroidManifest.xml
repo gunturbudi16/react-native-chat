@@ -1,8 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="com.sakochat">
-
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-
+    <uses-permission android:name="android.permission.CAMERA" />  
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <application
       android:name=".MainApplication"
       android:label="@string/app_name"
@@ -22,6 +23,9 @@
         </intent-filter>
       </activity>
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
+      <meta-data
+     android:name="com.google.android.geo.API_KEY"
+     android:value="AIzaSyAkMWkmNG-ZmbItrUK0xrA_cQB5iVKZlc0"/>
     </application>
 
 </manifest>

@@ -1,42 +1,43 @@
-import React from 'react';
-
+import React, {Component} from 'react';
+import User from '../auth/User';
 import {
   SafeAreaView,
   Image,
   Text,
   View,
-  StyleSheet,
+  Button,
   FlatList,
   AsyncStorage,
   TouchableOpacity,
 } from 'react-native';
 
 import firebase from 'firebase';
+
+import {NavigationEvents} from 'react-navigation';
+
 import _ from 'lodash';
 
-class Home extends React.Component {
+class Home extends Component {
   _isMounted = false;
   constructor(props) {
     super(props);
     this.state = {
       users: [],
+      loading: true,
     };
   }
-  static navigationOptions = () => {
-    return {
-      headerShown: false,
-    };
-  };
-  async _fetchdata() {
+
+  fetchData = async () => {
     this._isMounted = true;
-    const uid = await AsyncStorage.getItem('userToken');
+    let uid = firebase.auth().currentUser.uid;
+
     firebase
       .database()
-      .ref(`user_conversation/${uid}`)
-      .on('child_added', snapshot => {
+      .ref(`users/`)
+      .on('child_added', (snapshot) => {
         if (snapshot.key !== uid) {
           if (this._isMounted) {
-            this.setState(prevState => {
+            this.setState((prevState) => {
               return {
                 users: prevState.users.concat(snapshot.val()),
               };
@@ -44,84 +45,135 @@ class Home extends React.Component {
           }
         }
       });
-  }
-  componentDidMount() {
-    this._fetchdata();
-  }
-  componentWillMount() {
+  };
+
+  componentDidMount = () => {
+    this.fetchData();
+  };
+
+  componentWillUnmount = () => {
     this._isMounted = false;
-  }
+  };
+
   renderRow = ({item}) => {
+    console.log(item);
+
     return (
-      <>
-        <TouchableOpacity
-          onPress={() => this.props.navigation.navigate('Chat', item)}
-          style={styles.chat}>
-          <Image
-            style={styles.image}
-            source={
-              item.image ? {uri: item.image} : require('../../assets/user.png')
-            }
-          />
-          <View>
-            <Text style={styles.name}>
-              {item.name} - {item.lastMessage}{' '}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </>
+      <TouchableOpacity
+        onPress={() => this.props.navigation.navigate('Chat', item)}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          padding: 10,
+          borderBottomColor: '#99a8b6',
+          borderBottomWidth: 0.8,
+        }}>
+        <Image
+          style={{
+            width: 36,
+            height: 36,
+            resizeMode: 'cover',
+            borderRadius: 32,
+            marginRight: 14,
+          }}
+          source={
+            item.image ? {uri: item.image} : require('../../assets/user.png')
+          }
+        />
+        <View>
+          <Text
+            style={{
+              fontSize: 16,
+              color: '#1f3142',
+              fontWeight: 'bold',
+            }}>
+            {item.name} - {item.lastMessage}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
   render() {
+    console.log('state', this.state.users);
+
     return (
-      <>
-        <SafeAreaView style={styles.view}>
-          <FlatList
-            data={this.state.users}
-            renderItem={this.renderRow}
-            keyExtractor={item => item.uid}
-            ListHeaderComponent={() => (
-              <View style={styles.flatlist}>
-                <Text style={styles.chats}> Chats </Text>
-              </View>
-            )}
-          />
-        </SafeAreaView>
-      </>
+      <SafeAreaView style={{backgroundColor: '#d6dce2', flex: 1}}>
+        <FlatList
+          data={this.state.users}
+          renderItem={this.renderRow}
+          keyExtractor={(item, index) => index.toString()}
+          ListHeaderComponent={() => (
+            <View
+              style={{
+                backgroundColor: 'black',
+                padding: 10,
+                alignItems: 'center',
+              }}>
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: 'orange',
+                  fontWeight: 'bold',
+                }}>
+                {' '}
+                Chats{' '}
+              </Text>
+            </View>
+          )}
+        />
+      </SafeAreaView>
     );
   }
 }
-const styles = StyleSheet.create({
-  view: {backgroundColor: '#d6dce2', flex: 1},
-  flatlist: {
-    backgroundColor: '#34526e',
-    padding: 10,
-    alignItems: 'center',
-  },
-  image: {
-    width: 36,
-    height: 36,
-    resizeMode: 'cover',
-    borderRadius: 32,
-    marginRight: 14,
-  },
-  chat: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderBottomColor: '#99a8b6',
-    borderBottomWidth: 0.8,
-  },
-  name: {
-    fontSize: 16,
-    color: '#1f3142',
-    fontWeight: 'bold',
-  },
-  chats: {
-    fontSize: 20,
-    color: '#eaedf0',
-    fontWeight: 'bold',
-  },
-});
+
 export default Home;
+
+// import React from 'react';
+// import {SafeAreaView, Text, TouchableOpacity, FlatList} from 'react-native';
+// import User from '../auth/User';
+// import firebase from 'firebase';
+
+// export default class Home extends React.Component {
+//   static navigationOptions = {
+//     header: null,
+//   };
+//   state = {users: [], dbRef: firebase.database().ref('users')};
+
+//   componentDidMount() {
+//     this.state.dbRef.on('child_added', val => {
+//       let person = val.val();
+//       person.phone = val.key;
+//       if (person.phone === User.phone) {
+//         User.name = person.name;
+//       } else {
+//         this.setState(prevState => {
+//           return {
+//             users: [...prevState.users, person],
+//           };
+//         });
+//       }
+//     });
+//   }
+
+//   renderRow = ({item}) => {
+//     return (
+//       <TouchableOpacity
+//         onPress={() => this.props.navigation.navigate('Chat', item)}>
+//         <Text>{item.name}</Text>
+//       </TouchableOpacity>
+//     );
+//   };
+//   render() {
+//     return (
+//       <SafeAreaView>
+//         <FlatList
+//           data={this.state.users}
+//           renderItem={this.renderRow}
+//           keyExtractor={item => item.phone}
+//           ListHeaderComponent={() => <Text>Chats</Text>}
+//         />
+//       </SafeAreaView>
+//     );
+//   }
+// }
