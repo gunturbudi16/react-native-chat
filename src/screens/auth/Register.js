@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ImageBackground,
 } from 'react-native';
+import Geolocation from 'react-native-geolocation-service';
 
 import {toastr} from '../../helpers/helper';
 
@@ -49,15 +50,12 @@ class Register extends Component {
         .auth()
         .createUserWithEmailAndPassword(email, password);
 
-      firebase
-        .database()
-        .ref('users')
-        .child(response.user.uid)
-        .set({
-          name,
-          email,
-          uid: response.user.uid,
-        });
+      firebase.database().ref('users').child(response.user.uid).set({
+        name,
+        email,
+
+        uid: response.user.uid,
+      });
 
       await AsyncStorage.setItem('userToken', response.user.uid);
 
@@ -67,7 +65,7 @@ class Register extends Component {
     }
   };
 
-  handleChange = key => value => {
+  handleChange = (key) => (value) => {
     this.setState({[key]: value});
   };
 

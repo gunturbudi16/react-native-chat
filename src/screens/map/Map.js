@@ -1,79 +1,123 @@
 import React, {Component} from 'react';
 
 import MapView, {PROVIDER_GOOGLE, Marker} from 'react-native-maps';
-import {StyleSheet, View, Text, PermissionsAndroid} from 'react-native';
-import Geolocation from 'react-native-geolocation-service';
-
+import {StyleSheet, View, Text, Image, TouchableOpacity} from 'react-native';
+import firebase from 'firebase';
 class MapScreen extends Component {
   state = {
-    latitude: 0,
-    longitude: 0,
-    latitudeDelta: 0,
-    longitudeDelta: 0,
+    tracksViewChanges: true,
+    userData: [],
+    isVisible: false,
+    uid: '',
+    friendName: '',
+    friendDob: '',
+    friendGender: '',
+
+    userUID: '',
+
+    friendLatitude: '',
+    friendLongitude: '',
   };
-  componentDidMount = () => {
-    PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'Acces Location',
-        message: 'This app would like to view your real location.',
-        buttonPositive: 'Accept',
-      },
-    ).then(() => {
-      Geolocation.getCurrentPosition(
-        (position) => {
-          const latitude = position.coords.latitude;
-          const longitude = position.coords.longitude;
-          const latitudeDelta = 0.00922 * 1.5;
-          const longitudeDelta = 0.00421 * 1.5;
-          this.setState({
-            latitude,
-            longitude,
-            latitudeDelta,
-            longitudeDelta,
-          });
-        },
-        (error) => {
-          console.log(error.code, error.message);
-        },
-        {enableHighAccuracy: true, timeout: 15000},
-      );
+  getAllUser = async () => {
+    const ref = firebase.database().ref('/users');
+    ref.on('value', async (snapshot) => {
+      let data = [];
+      await Object.keys(snapshot.val()).map((key) => {
+        data.push({
+          uid: key,
+          data: snapshot.val()[key],
+        });
+      });
+      await this.setState({
+        userData: data,
+      });
     });
   };
+  getUser = async () => {
+    const uid = firebase.auth().currentUser.uid;
+    this.setState({
+      userUID: uid,
+    });
+  };
+  handleProfile = async (uid) => {
+    this.setState({
+      isVisible: !this.state.isVisible,
+      uid,
+    });
+    const ref = firebase.database().ref(`users/${uid}`);
+    await ref.on('value', (snapshot) => {
+      this.setState({
+        friendName: snapshot.val().name,
+        friendDob: snapshot.val().status,
+        friendGender: snapshot.val().bio,
+      });
+    });
+  };
+
+  stopTrackingViewChanges = () => {
+    this.setState(() => ({
+      tracksViewChanges: false,
+    }));
+  };
+  componentDidMount() {
+    this.getUser();
+    this.getAllUser();
+  }
   render() {
+    const {tracksViewChanges} = this.state;
     return (
-      <View style={styles.container}>
+      <>
         <MapView
+          onPress={() => this.setState({isVisible: false})}
           provider={PROVIDER_GOOGLE}
-          style={styles.map}
-          region={{
-            latitude: this.state.latitude,
-            longitude: this.state.longitude,
-            latitudeDelta: this.state.latitudeDelta,
-            longitudeDelta: this.state.longitudeDelta,
-          }}
-          showsUserLocation={true}>
-          <Marker
-            coordinate={{
-              latitude: this.state.latitude,
-              longitude: this.state.longitude,
-            }}
-            title="Marker Me"></Marker>
+          style={{flex: 1}}
+          initialRegion={{
+            latitude: -7.7584874,
+            longitude: 110.3781121,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}>
+          {this.state.userData.map((data) => {
+            {
+            }
+            return (
+              <Marker
+                onPress={() => this.handleProfile(data.data.uid)}
+                coordinate={{
+                  latitude: Number(data.data.latitude),
+                  longitude: Number(data.data.longitude),
+                }}
+                title={data.data.name}
+                description={data.data.status}
+                key={data.data.uid}>
+                <View style={styles.marker}>
+                  <Image
+                    source={require('../../assets/user.png')}
+                    style={{
+                      height: 40,
+                      width: 40,
+                      borderRadius: 20,
+                      borderColor: 'white',
+                      borderWidth: 1,
+                    }}
+                  />
+                </View>
+              </Marker>
+            );
+          })}
         </MapView>
-      </View>
+      </>
     );
   }
 }
 export default MapScreen;
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
-    height: '100%',
-    width: '100%',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
+    flex: 1,
   },
-  map: {
-    ...StyleSheet.absoluteFillObject,
+  marker: {
+    padding: 5,
+    borderRadius: 20,
+    elevation: 10,
   },
 });

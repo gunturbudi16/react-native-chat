@@ -38,10 +38,7 @@ class Profile extends Component {
       bio: '',
       imageSource: require('../../assets/user.png'),
       upload: false,
-      latitude: '',
-      longitude: '',
     };
-    this.updateLocation();
   }
 
   async _getProfile() {
@@ -57,16 +54,13 @@ class Profile extends Component {
     const name = person.val().name;
     const status = person.val().status;
     const bio = person.val().bio;
-    const latitude = person.val().latitude;
-    const longitude = person.val().longitude;
+
     if (this._isMounted) {
       this.setState({
         imageSource: image ? {uri: image} : require('../../assets/user.png'),
         name: name ? name : '',
         status: status ? status : '',
         bio: bio ? bio : '',
-        latitude: latitude ? latitude : '',
-        longitude: longitude ? longitude : '',
       });
     }
   }
@@ -115,7 +109,6 @@ class Profile extends Component {
 
       if (error === false) {
         this.updateUser();
-        this.updateLocation();
       }
     } catch (error) {
       toastr(error.message, 'danger');
@@ -184,7 +177,7 @@ class Profile extends Component {
   }
 
   updateUser = async (imageUrl) => {
-    const {imageSource, name, status, bio, latitude, longitude} = this.state;
+    const {imageSource, name, status, bio} = this.state;
     const {currentUser} = firebase.auth();
 
     const getDBImage = await firebase
@@ -204,8 +197,6 @@ class Profile extends Component {
         name: name ? name : '',
         status: status ? status : '',
         bio: bio ? bio : '',
-        latitude: this.state.latitude,
-        longitude: this.state.longitude,
       });
 
     toastr('Successfully updated !', 'success');
@@ -252,60 +243,6 @@ class Profile extends Component {
       xhr.send(null);
     });
   };
-  updateLocation = async () => {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'ReactNativeCode Location Permission',
-        message: 'ReactNativeCode App needs access to your location',
-      },
-    );
-    if (granted) {
-      await Geolocation.getCurrentPosition(
-        async (position) => {
-          console.log('My current location', JSON.stringify(position));
-          await this.setState({
-            latitude: position.coords.latitude.toString(),
-            longitude: position.coords.longitude.toString(),
-          });
-        },
-        (error) => {
-          console.log(error.code, error.message);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 10000,
-        },
-      );
-    }
-  };
-
-  handleUpdateLocation = async () => {
-    const uid = firebase.auth().currentUser.uid;
-    const {name, status, bio, imageSource, latitude, longitude} = this.state;
-    const ref = firebase.database().ref(`/users/${uid}`);
-    setTimeout(async () => {
-      await ref.set({
-        name,
-        status,
-        bio,
-        uid,
-        latitude,
-        longitude,
-        imageSource: require('../../assets/user.png'),
-      });
-      ToastAndroid.showWithGravity(
-        `Location Updated`,
-        ToastAndroid.SHORT,
-        ToastAndroid.BOTTOM,
-      );
-    }, 2000);
-  };
-
-  async componentDidMount() {
-    await this.updateLocation();
-  }
 
   render() {
     return (

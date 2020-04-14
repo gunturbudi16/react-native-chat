@@ -17,10 +17,15 @@ import {enableScreens} from 'react-native-screens';
 import {createBottomTabNavigator} from 'react-navigation-tabs';
 enableScreens();
 
-const AppStack = createStackNavigator({
-  Home: HomeScreen,
-  Chat: ChatScreen,
-});
+const AppStack = createStackNavigator(
+  {
+    Home: HomeScreen,
+    Chat: ChatScreen,
+  },
+  /* {
+    headerMode: 'none',
+  }, */
+);
 
 AppStack.navigationOptions = ({navigation}) => {
   let tabBarVisible = navigation.state.index === 0;

@@ -8,10 +8,12 @@ import {
   ImageBackground,
   AsyncStorage,
   StyleSheet,
+  PermissionsAndroid,
 } from 'react-native';
 import {toastr} from '../../helpers/helper';
 import User from './User';
 import firebase from 'firebase';
+import Geolocation from 'react-native-geolocation-service';
 
 class Login extends React.Component {
   static navigationOptions = {
@@ -22,13 +24,15 @@ class Login extends React.Component {
     this.state = {
       email: '',
       password: '',
+      latitude: '',
+      longitude: '',
     };
   }
-  handleChange = key => value => {
+  handleChange = (key) => (value) => {
     this.setState({[key]: value});
   };
   LoginAsync = async () => {
-    const {email, password} = this.state;
+    const {email, password, latitude, longitude} = this.state;
     const {navigation} = this.props;
     try {
       if (password.length < 5) {
@@ -37,24 +41,50 @@ class Login extends React.Component {
       const response = await firebase
         .auth()
         .signInWithEmailAndPassword(email, password);
-      firebase
-        .database()
-        .ref('users')
-        .child(response.user.uid)
-        .update({
-          uid: response.user.uid,
-        });
+      firebase.database().ref('users').child(response.user.uid).update({
+        uid: response.user.uid,
+        latitude: latitude,
+        longitude: longitude,
+      });
       await AsyncStorage.setItem('userToken', response.user.uid);
       User.uid = response.user.uid;
-      /*  firebase
-        .database()
-        .ref('users/' + User.uid)
-        .set({name: this.state.name}); */
       navigation.navigate('App');
     } catch (error) {
       toastr(error.message, 'danger');
     }
   };
+  async componentDidMount() {
+    //LOCATION
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      {
+        title: 'ReactNativeCode Location Permission',
+        message: 'ReactNativeCode App needs access to your location ',
+      },
+    );
+    if (granted) {
+      Geolocation.getCurrentPosition(
+        (position) => {
+          this.setState({
+            latitude: position.coords.latitude.toString(),
+            longitude: position.coords.longitude.toString(),
+          });
+        },
+        (error) => {
+          console.log(error.code, error.message);
+        },
+        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      );
+
+      this.watchID = Geolocation.watchPosition((lastPosition) => {
+        this.setState({lastPosition});
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    Geolocation.clearWatch(this.watchID);
+  }
   _renderAccessButton = () => {
     return (
       <TouchableOpacity
@@ -165,7 +195,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
   user: state.auth,
   email: state.auth.email,
   password: state.auth.password,

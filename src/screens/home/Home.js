@@ -13,8 +13,6 @@ import {
 
 import firebase from 'firebase';
 
-import {NavigationEvents} from 'react-navigation';
-
 import _ from 'lodash';
 
 class Home extends Component {
@@ -56,8 +54,6 @@ class Home extends Component {
   };
 
   renderRow = ({item}) => {
-    console.log(item);
-
     return (
       <TouchableOpacity
         onPress={() => this.props.navigation.navigate('Chat', item)}
@@ -95,8 +91,6 @@ class Home extends Component {
   };
 
   render() {
-    console.log('state', this.state.users);
-
     return (
       <SafeAreaView style={{backgroundColor: '#d6dce2', flex: 1}}>
         <FlatList
@@ -116,8 +110,7 @@ class Home extends Component {
                   color: 'orange',
                   fontWeight: 'bold',
                 }}>
-                {' '}
-                Chats{' '}
+                Chats
               </Text>
             </View>
           )}
