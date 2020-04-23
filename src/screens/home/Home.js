@@ -1,3 +1,4 @@
+
 import React, {Component} from 'react';
 import User from '../auth/User';
 import {
@@ -121,52 +122,3 @@ class Home extends Component {
 }
 
 export default Home;
-
-// import React from 'react';
-// import {SafeAreaView, Text, TouchableOpacity, FlatList} from 'react-native';
-// import User from '../auth/User';
-// import firebase from 'firebase';
-
-// export default class Home extends React.Component {
-//   static navigationOptions = {
-//     header: null,
-//   };
-//   state = {users: [], dbRef: firebase.database().ref('users')};
-
-//   componentDidMount() {
-//     this.state.dbRef.on('child_added', val => {
-//       let person = val.val();
-//       person.phone = val.key;
-//       if (person.phone === User.phone) {
-//         User.name = person.name;
-//       } else {
-//         this.setState(prevState => {
-//           return {
-//             users: [...prevState.users, person],
-//           };
-//         });
-//       }
-//     });
-//   }
-
-//   renderRow = ({item}) => {
-//     return (
-//       <TouchableOpacity
-//         onPress={() => this.props.navigation.navigate('Chat', item)}>
-//         <Text>{item.name}</Text>
-//       </TouchableOpacity>
-//     );
-//   };
-//   render() {
-//     return (
-//       <SafeAreaView>
-//         <FlatList
-//           data={this.state.users}
-//           renderItem={this.renderRow}
-//           keyExtractor={item => item.phone}
-//           ListHeaderComponent={() => <Text>Chats</Text>}
-//         />
-//       </SafeAreaView>
-//     );
-//   }
-// }
