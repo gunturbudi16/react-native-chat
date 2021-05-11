@@ -15,7 +15,7 @@
     "@react-navigation/native": "^5.1.4",
     "base-64": "^0.1.0",
     "firebase": "^7.13.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "native-base": "^2.13.12",
     "react": "16.11.0",
     "react-native": "0.62.0",
